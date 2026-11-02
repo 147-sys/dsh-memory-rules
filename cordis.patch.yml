@@ -1,0 +1,91 @@
+# dsh-memory-rules bundle patch: inserts the merged memory + rules plugin row
+# into the profile roster (applied as a profile bundle layer through the
+# `dsh.bundle.patch` manifest field). Install with:
+#
+#   dsh plugin --profile desktop add link:<absolute-path-to-this-package>
+#
+# The row references the package by name: the node half (exports ".") runs in
+# the host process and owns the memory directory, the SQLite store, the
+# per-turn fact extraction, the recall injection, the four-path retrieval, the
+# model tools and the editable 提示词 blocks that carry the user's hard
+# collaboration rules (the row `prompt_blocks.id='user-rules'`, injected
+# through the `memory-rules` system-prompt context at order 120). That context
+# name is deliberately NOT the retired bundle's `user-rules`: the two plugins
+# would otherwise own the same context name, and during a transition both are
+# loaded at once.
+#
+# `config` below restates every owned key, so a later layer
+# (`<profile>/cordis.patch.yml`) can override individual values while keeping
+# this bundle first in the stack. An empty string or 0 means "not set here":
+# the env var (DSH_MEMORY_*) still applies, then the built-in default.
+- insert:
+    - id: memory-rules
+      name: dsh-memory-rules
+      config:
+        # ---- storage ------------------------------------------------------
+        # Empty = $DSH_MEMORY_DIR, else $DSH_HOME/memory (~/.dsh/memory).
+        memoryDir: ''
+        # Empty = $DSH_MEMORY_DB, else <memoryDir>/memory.db.
+        dbFile: ''
+        # auto | node:sqlite | sql.js. `auto` prefers the built-in engine.
+        dbEngine: auto
+        # ---- ingest (写入) -------------------------------------------------
+        captureEnabled: true
+        captureUserChars: 4000
+        captureAssistantChars: 2000
+        captureRecentTurns: 40
+        captureMaxChars: 0
+        captureMinTurns: 1
+        ingestEnabled: true
+        ingestMaxFactChars: 240
+        ingestMinConfidence: 0.35
+        ingestMaxFactsPerTurn: 8
+        ingestAssistant: false
+        markdownMirror: true
+        # ---- retrieve (检索) -----------------------------------------------
+        recallEnabled: true
+        recallEntries: 6
+        recallEntryChars: 700
+        recallMinScore: 1
+        recallRecencyTail: true
+        pathSemantic: true
+        pathKeyword: true
+        pathGraph: true
+        pathTimeline: true
+        pathLimit: 24
+        embedDims: 256
+        # Lowered from 0.35 in 3.2.0: confidence is query-independent and 58% of
+        # the store sits at the 0.72 default, so a heavy weight just gives every
+        # old high-confidence row a permanent head start.
+        rankConfidenceWeight: 0.2
+        rankRecencyWeight: 0.15
+        # observed = divide by the best RRF this query produced; single = the old
+        # constant, kept so an A/B run can attribute a change to the weights.
+        rankNormalize: observed
+        rankRecencyHalfLifeDays: 45
+        answerShortcut: true
+        # Where the injected block sits relative to the turn's own words.
+        # before-user keeps the question last; after-user is the pre-3.2 order.
+        recallPosition: before-user
+        # Slots reserved for beliefs that similarity will not surface often
+        # enough to hold a persona (0 disables the reservation).
+        recallBeliefSlot: 1
+        recallBeliefGlobalMax: 2
+        # ---- reflect (反思) ------------------------------------------------
+        reflectEnabled: true
+        # Crontab `0 3 */7 * *`: days 1, 8, 15, 22, 29 at 03:00 local time.
+        reflectDays: [1, 8, 15, 22, 29]
+        reflectAt: '03:00'
+        reflectStartupDelayMinutes: 2
+        reflectMinEvidence: 3
+        reflectTopicThreshold: 0.34
+        # Quality gate: only conclusion-like statements become belief evidence.
+        # Blocked facts stay in the store and in retrieval.
+        reflectQualityGate: true
+        reflectMinChars: 12
+        reflectSkipPatterns: []
+        # ---- answers and tools ---------------------------------------------
+        answerStaleDays: 60
+        maxTokens: 0
+        searchMaxResults: 20
+        contextOrder: 150

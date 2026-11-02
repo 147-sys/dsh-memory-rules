@@ -1,0 +1,63 @@
+{
+  "name": "dsh-memory-rules",
+  "version": "3.2.0",
+  "description": "Local memory and standing rules for DeepSeek Harness — SQLite-backed four-layer memory (world facts, experiences, beliefs, standing answers) with structured fact extraction per turn, four-path retrieval (semantic/keyword/graph/timeline), 7-day belief consolidation, Markdown export, a pre-step recall hook, an editable set of system-prompt blocks carrying the user's hard collaboration rules (formerly the separate dsh-user-rules bundle), and a 记忆与规则 Web UI with 信念库 and 提示词 tabs.",
+  "author": "147-sys",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/147-sys/dsh-memory-rules.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "sql",
+    "tools",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/",
+    "build:schema": "node tools/build-schema.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "sql.js": "^1.13.0"
+  },
+  "peerDependenciesMeta": {
+    "sql.js": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "cordis",
+    "memory",
+    "long-term-memory",
+    "agent-memory",
+    "sqlite",
+    "system-prompt",
+    "prompt-blocks",
+    "user-rules"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

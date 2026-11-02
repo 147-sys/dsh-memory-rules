@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# local data — never commit a memory store
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+memory/
+*.log
+
+# secrets
+.env
+*.env
+secrets/
+
+# backups / temp
+*.bak
+*.bak-*
+*.tmp
+.DS_Store
